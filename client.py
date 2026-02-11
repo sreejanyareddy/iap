@@ -32,7 +32,7 @@ def send_messages(sock):
                 break
 
             else:
-                print("Use: send <message> OR disconnect")
+                print("Use: send <message> OR exit")
 
         except:
             break

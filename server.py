@@ -14,7 +14,7 @@ def load_users():
     try:
         with open(USER_DB, "r") as f:
             for line in f:
-                username, hashed = line.strip().split(":")
+                username, hashed = line.strip().split(":", 1)
                 users[username] = hashed.encode()
     except FileNotFoundError:
         pass
