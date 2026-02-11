@@ -107,6 +107,7 @@ def logout(client_socket):
 def handle_client(client_socket, client_address):
     print(f"[+] Connection from {client_address}")
 
+    # Authentication Phase
     while True:
         username = handle_auth(client_socket)
         if username:
@@ -116,14 +117,34 @@ def handle_client(client_socket, client_address):
 
     try:
         while True:
-            message = client_socket.recv(1024)
-            if not message:
+            data = client_socket.recv(1024)
+            if not data:
                 break
-            broadcast(message, client_socket)
+
+            message = data.decode().strip()
+            parts = message.split()
+
+            if not parts:
+                continue
+
+            command = parts[0].upper()
+
+            # EXIT command
+            if command == "EXIT":
+                client_socket.send(b"Goodbye\n")
+                break
+
+            # SEND command
+            elif command == "SEND":
+                actual_message = " ".join(parts[1:])
+                broadcast(actual_message.encode(), client_socket)
+
+            else:
+                client_socket.send(b"ERROR Unknown command\n")
+
     finally:
         print(f"[-] {username} disconnected")
         logout(client_socket)
-
 
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

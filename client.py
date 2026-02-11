@@ -23,12 +23,10 @@ def send_messages(sock):
             msg = input()
 
             if msg.startswith("send "):
-                actual_msg = msg[5:]
-                sock.sendall(actual_msg.encode())
+                sock.sendall(msg.encode())
 
-            elif msg.lower() == "disconnect":
-                print("Disconnecting...")
-                sock.close()
+            elif msg.lower() == "exit":
+                sock.sendall(b"EXIT")
                 break
 
             else:
@@ -59,14 +57,15 @@ def main():
             print("Type exit to disconnect\n")
             break
 
-    # Messaging Phase
     recv_thread = threading.Thread(target=receive_messages, args=(sock,))
     send_thread = threading.Thread(target=send_messages, args=(sock,))
 
     recv_thread.start()
     send_thread.start()
 
-    send_thread.join()  # Wait until user disconnects
+    send_thread.join()
+    sock.close()
+    print("Client exited cleanly.")
 
 
 if __name__ == "__main__":
