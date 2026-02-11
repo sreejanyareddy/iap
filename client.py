@@ -8,10 +8,11 @@ PORT = 5000
 def receive_messages(sock):
     while True:
         try:
-            msg = sock.recv(1024).decode()
+            msg = sock.recv(1024)
             if not msg:
+                print("Server disconnected.")
                 break
-            print(msg)
+            print(msg.decode())
         except:
             break
 
@@ -22,13 +23,17 @@ def send_messages(sock):
             msg = input()
 
             if msg.startswith("send "):
-                actual_msg = msg[5:]  # remove "send "
+                actual_msg = msg[5:]
                 sock.sendall(actual_msg.encode())
-            elif msg == "exit":
+
+            elif msg.lower() == "disconnect":
+                print("Disconnecting...")
                 sock.close()
                 break
+
             else:
-                print('Use: send <message> or exit')
+                print("Use: send <message> OR disconnect")
+
         except:
             break
 
@@ -37,6 +42,7 @@ def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((HOST, PORT))
 
+    # Authentication Phase
     while True:
         command = input("Enter command (REGISTER / LOGIN): ").strip().upper()
         username = input("Username: ")
@@ -49,15 +55,18 @@ def main():
         print(response)
 
         if response.startswith("OK") and command == "LOGIN":
-            print("You can now broadcast messages.")
-            print('Type: send <message>  to broadcast the message\n')
+            print("Type send <message> to broadcast")
+            print("Type exit to disconnect\n")
             break
 
-    threading.Thread(target=receive_messages, args=(sock,), daemon=True).start()
-    threading.Thread(target=send_messages, args=(sock,), daemon=True).start()
+    # Messaging Phase
+    recv_thread = threading.Thread(target=receive_messages, args=(sock,))
+    send_thread = threading.Thread(target=send_messages, args=(sock,))
 
-    while True:
-        pass
+    recv_thread.start()
+    send_thread.start()
+
+    send_thread.join()  # Wait until user disconnects
 
 
 if __name__ == "__main__":

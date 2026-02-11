@@ -24,7 +24,7 @@ def save_user(username, hashed):
     with open(USER_DB, "a") as f:
         f.write(f"{username}:{hashed.decode()}\n")
 
-# ✅ LOAD USERS AT STARTUP
+# LOAD USERS AT STARTUP
 users = load_users()
 
 authenticated = {}   # socket -> username
